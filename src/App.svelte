@@ -2,9 +2,39 @@
   import { tick } from 'svelte'
   import { scale } from 'svelte/transition'
   import { check } from './check'
+  import { words } from './words'
+
+  const answer = words[Math.floor(Math.random() * words.length)]
+  const letterData = [
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+    'f',
+    'g',
+    'h',
+    'i',
+    'j',
+    'k',
+    'l',
+    'm',
+    'n',
+    'o',
+    'p',
+    'q',
+    'r',
+    's',
+    't',
+    'u',
+    'v',
+    'w',
+    'x',
+    'y',
+    'z'
+  ].map((letter) => ({ letter, state: 'unused' }))
 
   let guesses = []
-  const answer = 'sales'
 
   async function handleGuess(event) {
     let guess = event.currentTarget.guess.value.toLowerCase()
@@ -12,7 +42,20 @@
     if (guesses.length === 5 || guesses.includes(guess)) return
 
     let guessData = check(guess, answer)
+
+    // check for victory
     let correctGuess = guessData.every((guess) => guess.state === 'correct')
+
+    // fill keyboard
+    guessData.forEach((guess) => {
+      let guessedLetterIndex = letterData.findIndex(
+        (l) => l.letter === guess.letter
+      )
+      if (letterData[guessedLetterIndex].state === 'unused') {
+        letterData[guessedLetterIndex].state = guess.state
+      }
+    })
+
     guesses = [...guesses, guessData]
 
     if (correctGuess) {
@@ -30,6 +73,7 @@
       )
       return
     }
+
     event.currentTarget.reset()
   }
 
@@ -72,6 +116,11 @@
       </li>
     {/each}
   </ol>
+  <div class="keyboard">
+    {#each letterData as { letter, state }}
+      <span class="letter" data-state={state}>{letter}</span>
+    {/each}
+  </div>
 </main>
 
 <style>
@@ -107,6 +156,25 @@
     z-index: 1;
   }
 
+  .keyboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: fixed;
+    bottom: 4rem;
+    width: 75%;
+    gap: 0.5rem;
+    padding-block: 1rem;
+    padding-inline: 2rem;
+  }
+
+  .keyboard .letter {
+    font-size: 2rem;
+    text-transform: uppercase;
+    width: 3rem;
+    transition: background-color 0.2s ease-out;
+  }
+
   .letter {
     align-items: center;
     aspect-ratio: 1 / 1;
@@ -126,5 +194,9 @@
 
   .letter[data-state='present'] {
     background-color: goldenrod;
+  }
+
+  .letter[data-state='absent'] {
+    background-color: #333;
   }
 </style>
