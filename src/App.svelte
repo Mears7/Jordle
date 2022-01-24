@@ -2,10 +2,10 @@
   import { tick } from 'svelte'
   import { scale } from 'svelte/transition'
   import { check } from './check'
-  import { words } from './words'
+  import { solutions } from './solutions'
 
-  const answer = words[Math.floor(Math.random() * words.length)]
-  const letterData = [
+  const answer = solutions[Math.floor(Math.random() * solutions.length)]
+  const keyboardData = [
     'a',
     'b',
     'c',
@@ -48,11 +48,17 @@
 
     // fill keyboard
     guessData.forEach((guess) => {
-      let guessedLetterIndex = letterData.findIndex(
+      let guessedLetterIndex = keyboardData.findIndex(
         (l) => l.letter === guess.letter
       )
-      if (letterData[guessedLetterIndex].state === 'unused') {
-        letterData[guessedLetterIndex].state = guess.state
+
+      // only valid transitions are unused -> something or present -> correct
+      if (
+        keyboardData[guessedLetterIndex].state === 'unused' ||
+        (keyboardData[guessedLetterIndex].state === 'present' &&
+          guess.state === 'correct')
+      ) {
+        keyboardData[guessedLetterIndex].state = guess.state
       }
     })
 
@@ -98,6 +104,7 @@
       autocapitalize="none"
       autocorrect="off"
       spellcheck="false"
+      autofocus
     />
   </form>
 
@@ -110,14 +117,14 @@
             data-state={state}
             class="letter"
           >
-            {letter}
+            {letter.toUpperCase()}
           </span>
         {/each}
       </li>
     {/each}
   </ol>
   <div class="keyboard">
-    {#each letterData as { letter, state }}
+    {#each keyboardData as { letter, state }}
       <span class="letter" data-state={state}>{letter}</span>
     {/each}
   </div>
@@ -162,7 +169,8 @@
     justify-content: center;
     position: fixed;
     bottom: 4rem;
-    width: 75%;
+    max-width: 80ch;
+    min-width: 40ch;
     gap: 0.5rem;
     padding-block: 1rem;
     padding-inline: 2rem;
@@ -178,7 +186,7 @@
   .letter {
     align-items: center;
     aspect-ratio: 1 / 1;
-    background-color: darkgrey;
+    background-color: #777;
     color: whitesmoke;
     border-radius: 3px;
     display: flex;
