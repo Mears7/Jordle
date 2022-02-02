@@ -91,7 +91,7 @@
 </script>
 
 <main>
-  <h1>Sverdle</h1>
+  <h1>Jordle</h1>
   <form on:submit|preventDefault={handleGuess}>
     <input
       on:keypress={handleInput}
